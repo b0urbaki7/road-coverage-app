@@ -1,7 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Search } from 'lucide-react';
+import { Search, Map as MapIcon, Info, Layers } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Alert, AlertDescription } from './ui/alert';
+
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -58,39 +61,35 @@ const CitySearch = ({ onCitySelect }) => {
   };
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-72">
-      <div className="relative">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search for a city..."
-            className="w-full px-4 py-2 pl-10 bg-white border rounded-lg shadow-md"
-          />
-          <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-        </div>
-        
-        {suggestions.length > 0 && (
-          <div className="absolute w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-            {suggestions.map((city, index) => (
-              <button
-                key={index}
-                onClick={() => handleCitySelect(city)}
-                className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-              >
-                {city.fullName}
-              </button>
-            ))}
+    <div className="search-container">
+      <Card>
+        <CardContent className="p-3">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search for a city..."
+              className="w-full px-4 py-2 pl-10 bg-white border rounded-lg"
+            />
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
-        )}
-        
-        {loading && (
-          <div className="absolute right-3 top-2.5">
-            <div className="w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
-          </div>
-        )}
-      </div>
+          
+          {suggestions.length > 0 && (
+            <div className="mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {suggestions.map((city, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleCitySelect(city)}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b last:border-b-0"
+                >
+                  {city.fullName}
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -170,10 +169,12 @@ const calculateCoverage = (roadData, bounds) => {
 
 export default function RoadMap() {
   const mapContainer = useRef(null);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const map = useRef(null);
   const [loading, setLoading] = useState(true);
   const [coverage, setCoverage] = useState(null);
   const [viewportArea, setViewportArea] = useState(null);
+  const [initialLocationLoaded, setInitialLocationLoaded] = useState(false);
 
   const handleCitySelect = (city) => {
     if (!map.current) return;
@@ -242,46 +243,129 @@ export default function RoadMap() {
       }
     };
 
-  useEffect(() => {
-    if (map.current) return;
-        
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-122.674194, 45.5202471],
-      zoom: 12
-    });
+  const getUserLocation = async () => {
+    try {
+      const response = await fetch('https://ipapi.co/json/');
+      const data = await response.json();
+      return {
+        lat: data.latitude,
+        lng: data.longitude,
+        city: data.city
+      };
+    } catch (error) {
+      console.error('Error fetching IP location:', error);
+      // Default to original coordinates if IP location fails
+      return {
+        lat: 45.5202471,
+        lng: -122.674194
+      };
+    }
+  };
 
-    map.current.on('load', calculateViewportCoverage);
+  useEffect(() => {
+    if (map.current || initialLocationLoaded) return;
+        
+    const initializeMap = async () => {
+      const userLocation = await getUserLocation();
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 12
+      });
+
+      // Add a marker for the user's location
+      new mapboxgl.Marker()
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(map.current);
+
+      map.current.on('load', () => {
+        calculateViewportCoverage();
+        setInitialLocationLoaded(true);
+      });
+    };
+
+    initializeMap();
   }, []);
 
   return (
-    <div>
-      <div ref={mapContainer} className="map-container" />
-      <CitySearch onCitySelect={handleCitySelect} />
-      <div className="p-4">
-      <button
-          onClick={calculateViewportCoverage}
-          disabled={loading}
-          className="mb-3 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center w-full"
-        >
-          {loading ? (
-            <>
-              <div className="w-4 h-4 border-t-2 border-white rounded-full animate-spin mr-2" />
-              Calculating...
-            </>
-          ) : (
-            'Calculate Coverage'
-          )}
-        </button>
-        {coverage !== null && (
-          <>
-            <div>Road coverage: {coverage}% of viewport area</div>
-            <div className="text-sm text-gray-600">
-              Viewport area: {viewportArea} km²
+    <div className="min-h-screen bg-gray-50">
+      {/* Fixed Header */}
+      <header className="h-16 fixed top-0 left-0 right-0 bg-white border-b z-20">
+        <div className="h-full px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+          <h1 className="text-xl font-semibold text-gray-900">Road Coverage Analysis</h1>
+          <MapIcon className="h-6 w-6 text-blue-500" />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="map-wrapper">
+        <div ref={mapContainer} className="map-container" />
+        <CitySearch onCitySelect={handleCitySelect} />
+        
+        {/* Sidebar */}
+        <div className={`sidebar ${sidebarExpanded ? 'sidebar-expanded' : ''}`}>
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Layers className="h-5 w-5 text-blue-500" />
+                <h2 className="text-lg font-semibold">Coverage Statistics</h2>
+              </div>
+              {/* Mobile-only expand button */}
+              <button 
+                className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                onClick={() => setSidebarExpanded(!sidebarExpanded)}
+              >
+                <Info className="h-5 w-5" />
+              </button>
             </div>
-          </>
-        )}
+
+            <button
+              onClick={calculateViewportCoverage}
+              disabled={loading}
+              className="mb-4 w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 
+                       disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors
+                       flex items-center justify-center gap-2 font-medium"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Calculating...
+                </>
+              ) : (
+                'Calculate Coverage'
+              )}
+            </button>
+
+            {coverage !== null && (
+              <div className="space-y-4">
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertDescription>
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Road Coverage: </span>
+                      <span className="text-2xl font-bold text-blue-600">{coverage}%</span>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Viewport Area: </span>
+                        <span className="font-medium">{viewportArea} km²</span>
+                      </div>
+                      {/* Add more stats here */}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

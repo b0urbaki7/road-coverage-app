@@ -27,7 +27,8 @@ dist-ssr
 *.sw?
 
 #environment variables
-.env
+.env*
+!.env.example
 
 # production build
 /build
