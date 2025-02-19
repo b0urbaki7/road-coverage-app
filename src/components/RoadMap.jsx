@@ -72,7 +72,6 @@ const CitySearch = ({ onCitySelect }) => {
               placeholder="Search for a city..."
               className="w-full px-4 py-2 pl-10 bg-white border rounded-lg"
             />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
           
           {suggestions.length > 0 && (
@@ -292,11 +291,10 @@ export default function RoadMap() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Fixed Header */}
-      <header className="h-16 fixed top-0 left-0 right-0 bg-white border-b z-20">
+      <header className="h-16 fixed top-0 left-0 right-0 bg-white border-b z-20 m-0 p-0">
         <div className="h-full px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold text-gray-900">Road Coverage Analysis</h1>
-          <MapIcon className="h-6 w-6 text-blue-500" />
+          <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold text-gray-900">Road Coverage Analysis<p className='text-xs'>by <a className='text-xs' href="https://github.com/b0urbaki7/road-coverage-app">@b0urbaki7</a></p></h1>
           </div>
         </div>
       </header>
@@ -308,19 +306,12 @@ export default function RoadMap() {
         
         {/* Sidebar */}
         <div className={`sidebar ${sidebarExpanded ? 'sidebar-expanded' : ''}`}>
-          <div className="p-4">
+          <div className="h-full flex flex-col p-4">
+          <div className="flex-1">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Layers className="h-5 w-5 text-blue-500" />
                 <h2 className="text-lg font-semibold">Coverage Statistics</h2>
               </div>
-              {/* Mobile-only expand button */}
-              <button 
-                className="md:hidden p-2 hover:bg-gray-100 rounded-full"
-                onClick={() => setSidebarExpanded(!sidebarExpanded)}
-              >
-                <Info className="h-5 w-5" />
-              </button>
             </div>
 
             <button
@@ -364,6 +355,9 @@ export default function RoadMap() {
                 </Card>
               </div>
             )}
+            
+          </div>
+          
           </div>
         </div>
       </div>

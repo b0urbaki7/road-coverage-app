@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -25,15 +29,11 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+
 
 button {
   border-radius: 8px;
@@ -91,12 +91,14 @@ button:focus-visible {
   position: absolute;
   top: 0;
   right: 0;
-  width: 400px;
+  width: 300px;
   height: 100%;
   background: #242525;
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: transform 0.3s ease;
+  display: flex;  /* Add this */
+  flex-direction: column;  /* Add this */
 }
 
 @media (max-width: 768px) {
