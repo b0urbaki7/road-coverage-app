@@ -70,7 +70,7 @@ const CitySearch = ({ onCitySelect }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search for a city..."
-              className="w-full px-4 py-2 pl-10 bg-white border rounded-lg"
+              className="w-full px-4 py-2 pl-10 bg-white border rounded-lg text-gray-800"
             />
           </div>
           
@@ -80,7 +80,7 @@ const CitySearch = ({ onCitySelect }) => {
                 <button
                   key={index}
                   onClick={() => handleCitySelect(city)}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b last:border-b-0"
+                  className="w-full px-4 py-2 text-left text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none border-b last:border-b-0"
                 >
                   {city.fullName}
                 </button>
@@ -310,7 +310,7 @@ export default function RoadMap() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Coverage Statistics</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Coverage Statistics</h2>
               </div>
             </div>
 
@@ -336,7 +336,7 @@ export default function RoadMap() {
                 <Alert className="bg-blue-50 border-blue-200">
                   <AlertDescription>
                     <div className="flex justify-between items-center">
-                      <span className="font-medium">Road Coverage: </span>
+                      <span className="font-medium text-gray-900">Road Coverage: </span>
                       <span className="text-2xl font-bold text-blue-600">{coverage}%</span>
                     </div>
                   </AlertDescription>
@@ -347,7 +347,7 @@ export default function RoadMap() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Viewport Area: </span>
-                        <span className="font-medium">{viewportArea} km²</span>
+                        <span className="font-medium text-gray-900">{viewportArea} km²</span>
                       </div>
                       {/* Add more stats here */}
                     </div>
